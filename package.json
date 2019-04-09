@@ -1,0 +1,19 @@
+{
+  "name": "tz44js-blog",
+  "version": "1.0.0",
+  "description": "js项目实战 &lt;个人博客>",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/GHRepository/tz44js-blog.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/GHRepository/tz44js-blog/issues"
+  },
+  "homepage": "https://github.com/GHRepository/tz44js-blog#readme"
+}
