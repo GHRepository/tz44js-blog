@@ -7,10 +7,10 @@ const UserSchema = new Schema({
   //   type: String,
   //   default: 1
   // },
-  // avatar: {
-  //   type: String,
-  //   default: "/avatar/default.jpg"
-  // },
+  avatar: {
+    type: String,
+    default: "/avatar/default.jpg"
+  },
   // articleNum: Number,
   // commentNum: Number
 }, {versionKey: false})
