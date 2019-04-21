@@ -1,10 +1,17 @@
-const { db } = require('../Schema/config')
-const ArticleSchema = require('../Schema/article')
-const UserSchema = require('../Schema/user')
-const User = db.model('users', UserSchema)
+// const { db } = require('../Schema/config')
+// const ArticleSchema = require('../Schema/article')
+// const UserSchema = require('../Schema/user')
+// const User = db.model('users', UserSchema)
 
-// 通过db对象创建操作user数据库的模型对象
-const Article = db.model('articles', ArticleSchema)
+// // 通过db对象创建操作user数据库的模型对象
+// const Article = db.model('articles', ArticleSchema)
+
+// const CommentSchema = require('../Schema/comment')
+// const Comment = db.model('comments', CommentSchema)
+
+const Article = require('../Models/article')
+const User = require('../Models/user')
+const comment = require('../Models/comment')
 
 // 返回文章发表页
 exports.addPage = async (ctx) => {
@@ -35,10 +42,10 @@ exports.add = async (ctx) => {
     new Article(data).save((err, data) => {
       if(err)return reject(err)
       // 更新用户文章计数
-      // User.update({_id: data.author}, {$inc: {articleNum: 1}}, err => {
-      //   if(err)return console.log(err)
-      //   console.log("文章保存成功")
-      // })
+      User.update({_id: data.author}, {$inc: {articleNum: 1}}, err => {
+        if(err)return console.log(err)
+        console.log("文章保存成功")
+      })
      
       // console.log(data.author)
       resolve(data)
@@ -90,4 +97,110 @@ exports.getList = async ctx => {
     maxNum,
   })
   // await ctx.render("index", {})
+}
+
+
+// 文章详情
+exports.details = async ctx => {
+  // 去动态路由的里的 id
+  const _id = ctx.params.id
+
+  // 查找文章本身数据
+  const article = await Article
+    .findById(_id)
+    .populate("author", "username")
+    .then(data => data)
+
+  // 查找跟当前文章关联的所有评论
+
+  const comment = await Comment
+    .find({article: _id})
+    .sort("-created")
+    .populate("from", "username avatar")
+    .then(data => data)
+    .catch(err => {
+      console.log(err)
+    })
+
+  await ctx.render("article", {
+    title: article.title,
+    article,
+    comment,
+    session: ctx.session
+  })
+}
+// 返回用户所有文章
+exports.artlist = async ctx => {
+  const uid = ctx.session.uid
+
+  const data = await Article.find({author: uid})
+
+  ctx.body = {
+    code: 0,
+    count: data.length,
+    data
+  }
+}
+
+// 删除对应 id 的文章
+exports.del = async ctx => {
+  const _id = ctx.params.id
+  
+  let res = {
+    state: 1,
+    message: "成功"
+  }
+
+  await Article.findById(_id)
+    .then(data => data.remove())
+    .catch(err => {
+      res = {
+        state: 0,
+        message: err
+      }
+    })
+
+  ctx.body = res
+  // const _id = ctx.params.id
+  // const uid = ctx.session.uid
+
+
+  // let res = {}
+
+  // //删除文章
+  // await Article.deleteOne({_id}).exec(err => {
+  //   if(err){
+  //       res = {
+  //         state: 0,
+  //         message: '删除失败'
+  //       }
+  //   }else{
+  //     Article.find({_id}, (errr,data) => {
+  //       if(err)return console.log(err)
+
+  //       uid = data.author
+  //     })
+  //   }
+  // })
+
+  // await User.update({_id:uid}, {$inc:{articleNum:-1}})
+  // await Comment.find({article:_id}).then(async data => {
+  //   // data => array
+  //   let len = data.length
+  //   let i = 0
+  //   async function deleteUser(){
+  //     if(i >= len)return
+  //     const cId = data[i]._id
+
+  //     await await Comment.deleteOne({_id:cId})
+  //     User.update({_id:data[i].from},{$inc:{commentNum:-1}},err => {
+  //       if(err)return console.log(err)
+  //       i++
+  //     })
+  //   }
+  //   await deleteUser()
+
+  // })
+  // ctx.body = res
+
 }

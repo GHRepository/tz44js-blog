@@ -1,10 +1,12 @@
-const { db } = require('../Schema/config')
+// const { db } = require('../Schema/config')
 
 const encrypt = require('../util/encrypt')
-
+const Article = require('../Models/article')
+const User = require('../Models/user')
+const comment = require('../Models/comment')
 // 通过db对象创建操作user数据库的模型对象
-const UserSchema = require('../Schema/user')
-const User = db.model('users', UserSchema)
+// const UserSchema = require('../Schema/user')
+// const User = db.model('users', UserSchema)
 // 用户注册
 exports.reg = async (ctx) => {
   // 用户注册时 post 发过来的数据
@@ -28,8 +30,8 @@ exports.reg = async (ctx) => {
       const _user = new User({
         username,
         password: encrypt(password),
-        // commentNum: 0,
-        // articleNum: 0
+        commentNum: 0,
+        articleNum: 0
       })
       _user.save((err, data) => {
         if(err){
@@ -108,7 +110,7 @@ exports.login = async (ctx) => {
       username,
       uid: data[0]._id,
       avatar: data[0].avatar,
-      // role: data[0].role
+      role: data[0].role
     }
     
 
@@ -153,4 +155,26 @@ exports.logout = async ctx => {
   })
   // 在后台做重定向到根  
   ctx.redirect("/")
+}
+// 用户的头像上传
+exports.upload = async ctx => {
+  const filename = ctx.req.file.filename
+
+  let data = {}
+
+  await User.update({_id: ctx.session.uid}, {$set: {avatar: "/avatar/" + filename}}, (err, res) => {
+    if(err){
+      data = {
+        status: 0,
+        message: "上传失败"
+      }
+    }else{
+      data = {
+        status: 1,
+        message: '上传成功'
+      }
+    }
+  })
+
+  ctx.body =  data
 }
